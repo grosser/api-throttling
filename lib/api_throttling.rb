@@ -11,6 +11,12 @@ class ApiThrottling
   end
   
   def call(env, options={})
+    if @options[:only] or @options[:except]
+      req = Rack::Request.new(env)
+      # call the app normally cause the path restriction didn't match
+      return @app.call(env) unless path_matches?(req.path)
+    end
+
     if @options[:auth]
       auth = Rack::Auth::Basic::Request.new(env)
       return auth_required unless auth.provided?
@@ -30,6 +36,12 @@ class ApiThrottling
     @app.call(env)
   end
   
+  def path_matches?(path)
+    only = @options[:only] || ''
+    except = @options[:except] || ''
+    !!(path =~ /^#{only}/) and !(path =~ /^#{except}/)
+  end
+
   def generate_key(env, auth)
     return @options[:key].call(env, auth) if @options[:key]
     auth ? "#{auth.username}_#{Time.now.strftime("%Y-%m-%d-%H")}" : "#{Time.now.strftime("%Y-%m-%d-%H")}"

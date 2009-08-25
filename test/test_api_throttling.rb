@@ -90,6 +90,88 @@ class ApiThrottlingTest < Test::Unit::TestCase
         assert_equal 200, last_response.status
       end
     end
+
+    context "with path restriction :only" do
+      def app
+        app = Rack::Builder.new {
+          use ApiThrottling, :requests_per_hour => 3, :only => '/awesome'
+          run lambda {|env| [200, {'Content-Type' =>  'text/plain', 'Content-Length' => '12'}, ["Hello World!"] ] }
+        }
+      end
+
+      test "should not throttle request to /" do
+        5.times do
+          get '/'
+          assert_equal 200, last_response.status
+        end
+      end
+
+      test "should throttle request to /awesome" do
+        3.times do
+          get '/awesome'
+          assert_equal 200, last_response.status
+        end
+        get '/awesome'
+        assert_equal 503, last_response.status
+      end
+    end
+
+    context "with path restrictions :except" do
+      def app
+        app = Rack::Builder.new {
+          use ApiThrottling, :requests_per_hour => 3, :except => '/awesome'
+          run lambda {|env| [200, {'Content-Type' =>  'text/plain', 'Content-Length' => '12'}, ["Hello World!"] ] }
+        }
+      end
+
+      test "should not throttle request to /awesome" do
+        5.times do
+          get '/awesome'
+          assert_equal 200, last_response.status
+        end
+      end
+
+      test "should throttle request to /" do
+        3.times do
+          get '/'
+          assert_equal 200, last_response.status
+        end
+        get '/'
+        assert_equal 503, last_response.status
+      end
+    end
+
+    conteyt "with path rescrictions :only and :except" do
+      def app
+        app = Rack::Builder.new {
+          use ApiThrottling, :requests_per_hour => 3, :only => '/awesome', :except => '/awesome/foo'
+          run lambda {|env| [200, {'Content-Type' =>  'text/plain', 'Content-Length' => '12'}, ["Hello World!"] ] }
+        }
+      end
+
+      test "should not throttle request to /" do
+        5.times do
+          get '/'
+          assert_equal 200, last_response.status
+        end
+      end
+
+      test "should throttle request to /awesome" do
+        3.times do
+          get '/awesome'
+          assert_equal 200, last_response.status
+        end
+        get '/awesome'
+        assert_equal 503, last_response.status
+      end
+
+      test "should not throttle request to /awesome/foo" do
+        5.times do
+          get '/awesome/foo'
+          assert_equal 200, last_response.status
+        end
+      end
+    end
   end
   
   context "using active support cache store" do
