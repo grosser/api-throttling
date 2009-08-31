@@ -38,8 +38,8 @@ class ApiThrottling
   
   def path_matches?(path)
     only = @options[:only] || ''
-    except = @options[:except] || ''
-    !!(path =~ /^#{only}/) and !(path =~ /^#{except}/)
+    except = @options[:except] || ' '
+    (path =~ /^#{only}/) and !(path =~ /^#{except}/)
   end
 
   def generate_key(env, auth)
