@@ -141,7 +141,7 @@ class ApiThrottlingTest < Test::Unit::TestCase
       end
     end
 
-    conteyt "with path rescrictions :only and :except" do
+    context "with path rescrictions :only and :except" do
       def app
         app = Rack::Builder.new {
           use ApiThrottling, :requests_per_hour => 3, :only => '/awesome', :except => '/awesome/foo'

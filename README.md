@@ -156,6 +156,26 @@ use ApiThrottling, :requests_per_hour => 3
 run lambda {|env| [200, {'Content-Type' =>  'text/plain', 'Content-Length' => '12'}, ["Hello World!"] ] }
 </pre>
 
+<p>If you deploy your API inside the same application you deploy your web frontent you might want to activate throttling just for the API not for the frontend. Usually the API has a path prefix like <em>/api/v1</em>. To throttle all API requests and let all frontend requests through you can use the options <em>:only</em> and/or <em>:except</em> and pass it a string with a path like this:</p>
+
+<pre>
+  use ApiThrottling, :requests_per_hour => 3, :only => '/api/v1'
+</pre>
+
+<p>This would throttle all requests beginning with <em>/api/v1/</em>.
+  
+<pre>
+  use ApiThrottling, :requests_per_hour => 3, :except => '/home'
+</pre>
+
+<p>This would throttle all requests except those beginning with <em>/home</em>.
+
+<pre>
+  use ApiThrottling, :requests_per_hour => 3, :only => '/api/v1', :except => '/api/v1/users'
+</pre>
+
+<p>This would throttle all requests beginning with <em>/api/v1/</em> but not those requests beginning with <em>/api/v1/users</em>.</p>
+
 <p><strong>That's it!</strong> Make sure your <em>redis-server</em> is running on port 6379 and try making calls to your api with curl. The first 3 calls will be succesful but the next ones will block because you've reached the limit that we've set:</p>
 
 <pre>
