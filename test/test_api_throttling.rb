@@ -1,5 +1,5 @@
-require 'redis'
 require File.expand_path(File.dirname(__FILE__) + '/test_helper')
+require 'redis'
 
 #  To Run this test, you need to have the redis-server running.
 #  And you need to have rack-test gem installed: sudo gem install rack-test
@@ -94,7 +94,7 @@ class ApiThrottlingTest < Test::Unit::TestCase
     context "with path restriction :only" do
       def app
         app = Rack::Builder.new {
-          use ApiThrottling, :requests_per_hour => 3, :only => '/awesome'
+          use ApiThrottling, :requests_per_hour => 3, :only => '/awesome', :auth => false
           run lambda {|env| [200, {'Content-Type' =>  'text/plain', 'Content-Length' => '12'}, ["Hello World!"] ] }
         }
       end
@@ -119,7 +119,7 @@ class ApiThrottlingTest < Test::Unit::TestCase
     context "with path restrictions :except" do
       def app
         app = Rack::Builder.new {
-          use ApiThrottling, :requests_per_hour => 3, :except => '/awesome'
+          use ApiThrottling, :requests_per_hour => 3, :except => '/awesome', :auth => false
           run lambda {|env| [200, {'Content-Type' =>  'text/plain', 'Content-Length' => '12'}, ["Hello World!"] ] }
         }
       end
@@ -144,7 +144,7 @@ class ApiThrottlingTest < Test::Unit::TestCase
     context "with path rescrictions :only and :except" do
       def app
         app = Rack::Builder.new {
-          use ApiThrottling, :requests_per_hour => 3, :only => '/awesome', :except => '/awesome/foo'
+          use ApiThrottling, :requests_per_hour => 3, :only => '/awesome', :except => '/awesome/foo', :auth => false
           run lambda {|env| [200, {'Content-Type' =>  'text/plain', 'Content-Length' => '12'}, ["Hello World!"] ] }
         }
       end
